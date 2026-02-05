@@ -712,6 +712,17 @@ if [[ "${FORCE_REINIT}" == "true" ]]; then
   
   set -e  # Re-enable exit on error
   echo "✓ Cleanup completed"
+
+  echo ""
+  echo "Re-running setup to restore configuration files..."
+  SETUP_SCRIPT="${SCRIPT_DIR}/setup-official-supabase.sh"
+  if [[ -f "${SETUP_SCRIPT}" ]]; then
+    "${SETUP_SCRIPT}"
+  else
+    echo "Error: Setup script not found at ${SETUP_SCRIPT}" >&2
+    exit 1
+  fi
+
   echo ""
   echo "Database will be reinitialized from init.sql on next deployment"
   echo ""
