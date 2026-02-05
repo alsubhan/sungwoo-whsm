@@ -663,6 +663,10 @@ if [[ "${FORCE_REINIT}" == "true" ]]; then
     if [[ -n "${COMPOSE_PROJECT_NAME}" ]]; then
       compose_cmd="docker compose -p ${COMPOSE_PROJECT_NAME}"
     fi
+    # Use COMPOSE_FILES if defined (for patched/core mode behavior) to ensure correct volumes are targeted
+    if [[ -n "${COMPOSE_FILES}" ]]; then
+      compose_cmd="${compose_cmd} ${COMPOSE_FILES}"
+    fi
     (cd "${SUPABASE_DOCKER_DIR}" && ${compose_cmd} down -v --remove-orphans 2>&1 | head -20) || true
   fi
   
