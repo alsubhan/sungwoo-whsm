@@ -659,7 +659,7 @@ if [[ "${FORCE_REINIT}" == "true" ]]; then
   
   # Stop and remove Supabase containers (use direct docker compose to avoid hanging)
   if [[ -d "${SUPABASE_DOCKER_DIR}" ]]; then
-    local compose_cmd="docker compose"
+    compose_cmd="docker compose"
     if [[ -n "${COMPOSE_PROJECT_NAME}" ]]; then
       compose_cmd="docker compose -p ${COMPOSE_PROJECT_NAME}"
     fi
@@ -699,9 +699,10 @@ if [[ "${FORCE_REINIT}" == "true" ]]; then
   done
 
   # Explicitly remove bind-mounted volumes directory to ensure factory reset
+  # Use docker to remove to avoid permission denied issues (files owned by root)
   if [[ -d "${SUPABASE_DOCKER_DIR}/volumes" ]]; then
     echo "Removing bind-mounted volumes directory: ${SUPABASE_DOCKER_DIR}/volumes"
-    rm -rf "${SUPABASE_DOCKER_DIR}/volumes"
+    docker run --rm -v "${SUPABASE_DOCKER_DIR}:/data" alpine sh -c "rm -rf /data/volumes" 2>/dev/null || sudo rm -rf "${SUPABASE_DOCKER_DIR}/volumes"
   fi
 
   # Also remove patched compose file to ensure clean regeneration
