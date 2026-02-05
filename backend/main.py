@@ -214,6 +214,8 @@ app.add_middleware(
         "http://127.0.0.1:3000",  # Alternative localhost
         "http://localhost:4173",  # Vite preview port
         "http://127.0.0.1:4173",  # Vite preview port
+        "https://versal.tolor.com",  # Production domain
+        "http://versal.tolor.com",   # Production domain (http)
     ],
     allow_credentials=True,
     allow_methods=["*"],
