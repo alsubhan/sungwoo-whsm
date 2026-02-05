@@ -693,11 +693,19 @@ if [[ "${FORCE_REINIT}" == "true" ]]; then
     [[ -n "${container}" ]] && docker rm -f "${container}" 2>/dev/null || true
   done
   
-  # Remove volumes (be careful - this deletes data)
   echo "Removing volumes..."
   docker volume ls --filter "name=supabase" --format "{{.Name}}" 2>/dev/null | while read -r volume; do
     [[ -n "${volume}" ]] && docker volume rm "${volume}" 2>/dev/null || true
   done
+
+  # Explicitly remove bind-mounted volumes directory to ensure factory reset
+  if [[ -d "${SUPABASE_DOCKER_DIR}/volumes" ]]; then
+    echo "Removing bind-mounted volumes directory: ${SUPABASE_DOCKER_DIR}/volumes"
+    rm -rf "${SUPABASE_DOCKER_DIR}/volumes"
+  fi
+
+  # Also remove patched compose file to ensure clean regeneration
+  rm -f "${SUPABASE_DOCKER_DIR}/docker-compose.yml.core" 2>/dev/null
   docker volume ls --filter "name=versal" --format "{{.Name}}" 2>/dev/null | while read -r volume; do
     [[ -n "${volume}" ]] && docker volume rm "${volume}" 2>/dev/null || true
   done
