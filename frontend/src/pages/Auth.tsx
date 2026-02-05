@@ -19,31 +19,31 @@ export default function Auth() {
     // Check if settings were already fetched in this session
     const settingsFetched = sessionStorage.getItem('auth_settings_fetched');
     const signupEnabled = sessionStorage.getItem('auth_signup_enabled');
-    
+
     if (settingsFetched === 'true' && signupEnabled !== null) {
       console.log('🔧 Using cached settings from session storage');
       setEnableSignup(signupEnabled === 'true');
       return false; // Don't show loading if we have cached settings
     }
-    
+
     return true; // Show loading if no cached settings
   });
   const settingsCompletedRef = useRef(false);
   const isMounted = useRef(true);
-  
+
   console.log(`🔍 Auth component state (useAuth instance: ${_instanceId}):`, { loading, isAuthenticated, settingsLoading, enableSignup });
 
   // Fetch public system settings to check if signup is enabled
   useEffect(() => {
     console.log('🔧 Settings useEffect running...');
-    
+
     // Don't fetch settings if user is already authenticated
     if (isAuthenticated) {
       console.log('🔧 User already authenticated, skipping settings fetch');
       setSettingsLoading(false);
       return;
     }
-    
+
     let timeoutId: NodeJS.Timeout;
 
     const fetchSettings = async () => {
@@ -53,47 +53,47 @@ export default function Auth() {
         console.log('🔧 Settings already completed, skipping fetch');
         return;
       }
-      
+
       try {
         console.log('🔧 Setting settingsLoading to true');
         setSettingsLoading(true);
-        
+
         // Create abort controller for request cancellation
         const controller = new AbortController();
         timeoutId = setTimeout(() => {
           console.log('⏰ Settings fetch timeout (3s) - aborting');
           controller.abort();
         }, 3000); // 3 second timeout
-        
+
         console.log('📡 Calling getPublicSystemSettings...');
         const settings = await getPublicSystemSettings(controller.signal);
         console.log('✅ Settings fetched successfully:', settings);
-        
+
         // Always set the state, even if component unmounts
         // This prevents the infinite loading issue
         const signupSetting = settings.find(s => s.key === 'enable_signup');
         const enableSignupValue = signupSetting ? signupSetting.value === true : false;
         console.log('🔧 Signup setting:', { signupSetting, enableSignupValue });
-        
+
         // Store in session storage for persistence across component unmounts
         sessionStorage.setItem('auth_settings_fetched', 'true');
         sessionStorage.setItem('auth_signup_enabled', enableSignupValue.toString());
-        
+
         // Set both states atomically to prevent race conditions
         setEnableSignup(enableSignupValue);
         setSettingsLoading(false);
-        
+
         settingsCompletedRef.current = true;
         clearTimeout(timeoutId);
         console.log('🔧 Settings fetch completed successfully');
       } catch (error) {
         console.error('❌ Error fetching settings:', error);
-        
+
         // Always set the state, even if component unmounts
         // Default to disabled if there's an error
         sessionStorage.setItem('auth_settings_fetched', 'true');
         sessionStorage.setItem('auth_signup_enabled', 'false');
-        
+
         setEnableSignup(false);
         setSettingsLoading(false);
         settingsCompletedRef.current = true;
@@ -108,7 +108,7 @@ export default function Auth() {
         console.warn('⏰ Settings fetch timeout, defaulting to disabled signup');
         sessionStorage.setItem('auth_settings_fetched', 'true');
         sessionStorage.setItem('auth_signup_enabled', 'false');
-        
+
         setEnableSignup(false);
         setSettingsLoading(false);
         settingsCompletedRef.current = true;
@@ -143,11 +143,11 @@ export default function Auth() {
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     const formData = new FormData(e.currentTarget);
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
-    
+
     await signIn(email, password);
     setIsLoading(false);
   };
@@ -155,14 +155,14 @@ export default function Auth() {
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     const formData = new FormData(e.currentTarget);
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
     const username = formData.get('username') as string;
     const fullName = formData.get('fullName') as string;
     const role = formData.get('role') as string;
-    
+
     await signUp(email, password, {
       username,
       full_name: fullName,
@@ -173,9 +173,9 @@ export default function Auth() {
 
   // Debug logging
   console.log('🔍 Auth component render state:', { loading, settingsLoading, isAuthenticated });
-  
+
   // This check is now handled by the redirect above
-  
+
   if (loading || settingsLoading) {
     console.log('⏳ Showing loading spinner - loading:', loading, 'settingsLoading:', settingsLoading);
     return (
@@ -195,10 +195,10 @@ export default function Auth() {
         <div className="text-center space-y-2">
           <div className="flex items-center justify-center space-x-2">
             <Package className="h-8 w-8 text-primary" />
-            <h1 className="text-2xl font-bold">Versal WMS</h1>
+            <h1 className="text-2xl font-bold">Sungwoo WHS</h1>
           </div>
           <p className="text-muted-foreground">
-            Warehouse Management System
+            WH and Store Mgmt System
           </p>
         </div>
 

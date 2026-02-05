@@ -26,6 +26,19 @@ import BarcodePage from "@/pages/BarcodePage";
 import UsersPage from "@/pages/UsersPage";
 import SettingsPage from "@/pages/SettingsPage";
 import UserSettingsPage from "@/pages/UserSettingsPage";
+// Transaction Modules
+import PickListPage from "@/pages/PickListPage";
+import PickingPage from "@/pages/PickingPage";
+import FinishGoodsReceiptPage from "@/pages/FinishGoodsReceiptPage";
+import IndentPage from "@/pages/IndentPage";
+import MaterialMovementPage from "@/pages/MaterialMovementPage";
+import StoreReceiptPage from "@/pages/StoreReceiptPage";
+import MaintenancePage from "@/pages/MaintenancePage";
+import ReturnFromProductionPage from "@/pages/ReturnFromProductionPage";
+import DeliveryChallanPage from "@/pages/DeliveryChallanPage";
+// Master Pages
+import MachineMasterPage from "@/pages/MachineMasterPage";
+import ProductionLinePage from "@/pages/ProductionLinePage";
 
 const App = () => {
   // Create a client
@@ -58,14 +71,27 @@ const App = () => {
               <Route path="reports" element={<ReportsPage />} />
               <Route path="purchase-orders" element={<PurchaseOrdersPage />} />
               <Route path="grns" element={<GRNsPage />} />
-                      <Route path="sale-orders" element={<SaleOrdersPage />} />
-        <Route path="sale-invoices" element={<SaleInvoicesPage />} />
+              <Route path="sale-orders" element={<SaleOrdersPage />} />
+              <Route path="sale-invoices" element={<SaleInvoicesPage />} />
               <Route path="credit-notes" element={<CreditNotesPage />} />
               <Route path="backup" element={<BackupPage />} />
               <Route path="barcodes" element={<BarcodePage />} />
               <Route path="users" element={<UsersPage />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="user-settings" element={<UserSettingsPage />} />
+              {/* Transaction Modules */}
+              <Route path="pick-list" element={<PickListPage />} />
+              <Route path="picking" element={<PickingPage />} />
+              <Route path="finish-goods-receipt" element={<FinishGoodsReceiptPage />} />
+              <Route path="indent" element={<IndentPage />} />
+              <Route path="material-movement" element={<MaterialMovementPage />} />
+              <Route path="store-receipt" element={<StoreReceiptPage />} />
+              <Route path="maintenance" element={<MaintenancePage />} />
+              <Route path="return-from-production" element={<ReturnFromProductionPage />} />
+              <Route path="delivery-challan" element={<DeliveryChallanPage />} />
+              {/* Master Pages */}
+              <Route path="machine-master" element={<MachineMasterPage />} />
+              <Route path="production-lines" element={<ProductionLinePage />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
@@ -76,3 +102,4 @@ const App = () => {
 };
 
 export default App;
+

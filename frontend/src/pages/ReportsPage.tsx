@@ -8,6 +8,7 @@ import { DateRangePicker } from "@/components/reports/DateRangePicker";
 import { SalesReport } from "@/components/reports/SalesReport";
 import { InventoryReport } from "@/components/reports/InventoryReport";
 import { PurchaseReport } from "@/components/reports/PurchaseReport";
+import { MaterialDispatchReport } from "@/components/reports/MaterialDispatchReport";
 import { useAuth } from "@/hooks/useAuth";
 import { PermissionGuard } from "@/components/ui/permission-guard";
 import { toast } from "sonner";
@@ -29,15 +30,15 @@ const ReportsPage = () => {
   const { hasPermission } = useAuth();
   const canExportReports = hasPermission('reports_export');
   const dataProviderRef = useRef<null | (() => { title: string; columns: { key: string; label: string }[]; rows: any[] })>(null);
-  
+
   const registerDataProvider = (provider: () => { title: string; columns: { key: string; label: string }[]; rows: any[] }) => {
     dataProviderRef.current = provider;
   };
-  
+
   const handleDateRangeChange = (range: DateRange) => {
     setDateRange(range);
   };
-  
+
   const downloadBlob = (blob: Blob, filename: string) => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -108,22 +109,22 @@ const ReportsPage = () => {
       toast.success('PDF generated');
     }
   };
-  
+
   return (
-    <PermissionGuard 
+    <PermissionGuard
       requiredPermission="reports_view"
       fallbackMessage="You do not have permission to view reports. Please contact an administrator."
     >
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <h1 className="text-2xl font-bold tracking-tight">Reports</h1>
-          
+
           <div className="flex flex-wrap items-center gap-2">
-            <DateRangePicker 
+            <DateRangePicker
               dateRange={dateRange}
               onDateRangeChange={handleDateRangeChange}
             />
-            
+
             <Select value={reportFormat} onValueChange={setReportFormat}>
               <SelectTrigger className="w-[130px]">
                 <SelectValue placeholder="Format" />
@@ -132,41 +133,46 @@ const ReportsPage = () => {
                 <SelectItem value="table">Table View</SelectItem>
                 {canExportReports && (
                   <>
-                <SelectItem value="pdf">Export PDF</SelectItem>
-                <SelectItem value="csv">Export CSV</SelectItem>
+                    <SelectItem value="pdf">Export PDF</SelectItem>
+                    <SelectItem value="csv">Export CSV</SelectItem>
                   </>
                 )}
               </SelectContent>
             </Select>
-            
+
             <Button onClick={handleExport} disabled={!canExportReports && reportFormat !== "table"}>
               {canExportReports ? "Generate" : "View"}
             </Button>
           </div>
         </div>
-        
+
         <Card>
           <CardHeader>
             <CardTitle>Report Summary</CardTitle>
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid grid-cols-3 mb-6">
+              <TabsList className="grid grid-cols-4 mb-6">
                 <TabsTrigger value="sales">Sales</TabsTrigger>
                 <TabsTrigger value="inventory">Inventory</TabsTrigger>
                 <TabsTrigger value="purchases">Purchases</TabsTrigger>
+                <TabsTrigger value="dispatch">Material Dispatch</TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="sales" className="space-y-4">
                 <SalesReport dateRange={dateRange} isActive={activeTab === 'sales'} registerDataProvider={registerDataProvider} />
               </TabsContent>
-              
+
               <TabsContent value="inventory" className="space-y-4">
                 <InventoryReport dateRange={dateRange} isActive={activeTab === 'inventory'} registerDataProvider={registerDataProvider} />
               </TabsContent>
-              
+
               <TabsContent value="purchases" className="space-y-4">
                 <PurchaseReport dateRange={dateRange} isActive={activeTab === 'purchases'} registerDataProvider={registerDataProvider} />
+              </TabsContent>
+
+              <TabsContent value="dispatch" className="space-y-4">
+                <MaterialDispatchReport dateRange={dateRange} isActive={activeTab === 'dispatch'} registerDataProvider={registerDataProvider} />
               </TabsContent>
             </Tabs>
           </CardContent>

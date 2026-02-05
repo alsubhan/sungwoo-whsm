@@ -69,7 +69,7 @@ type Product = {
   allow_override_price?: boolean;
   warehouse_rack?: string;
   unit_conversions?: any;
-  stock_levels?: Array<{ quantity_on_hand: number; quantity_available: number }> | { quantity_on_hand: number; quantity_available: number };
+  stock_levels?: Array<{ quantity_on_hand: number; quantity_available: number; location_name?: string }> | { quantity_on_hand: number; quantity_available: number; location_name?: string };
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -85,13 +85,13 @@ type ProductTableProps = {
 const ITEMS_PER_PAGE = 20; // Limit items per page for better performance
 
 // Sortable header component
-const SortableHeader = ({ 
-  field, 
-  children, 
-  sortField, 
-  sortDirection, 
-  onSort, 
-  className = "" 
+const SortableHeader = ({
+  field,
+  children,
+  sortField,
+  sortDirection,
+  onSort,
+  className = ""
 }: {
   field: string;
   children: React.ReactNode;
@@ -101,20 +101,20 @@ const SortableHeader = ({
   className?: string;
 }) => {
   const isActive = sortField === field;
-  
+
   return (
-    <TableHead 
+    <TableHead
       className={`cursor-pointer select-none hover:bg-gray-50 ${className}`}
       onClick={() => onSort(field)}
     >
       <div className="flex items-center gap-1">
         {children}
         <div className="flex flex-col">
-          <ChevronUp 
-            className={`h-3 w-3 ${isActive && sortDirection === "asc" ? "text-blue-600" : "text-gray-400"}`} 
+          <ChevronUp
+            className={`h-3 w-3 ${isActive && sortDirection === "asc" ? "text-blue-600" : "text-gray-400"}`}
           />
-          <ChevronDown 
-            className={`h-3 w-3 -mt-1 ${isActive && sortDirection === "desc" ? "text-blue-600" : "text-gray-400"}`} 
+          <ChevronDown
+            className={`h-3 w-3 -mt-1 ${isActive && sortDirection === "desc" ? "text-blue-600" : "text-gray-400"}`}
           />
         </div>
       </div>
@@ -145,9 +145,9 @@ export const ProductTable = ({ onEdit, onRefresh, searchTerm = "" }: ProductTabl
       try {
         console.log('Testing backend products API...');
         const testResult = await getProducts();
-        
+
         console.log('Test query result:', testResult);
-        
+
         if (Array.isArray(testResult)) {
           console.log('Test query succeeded, found products:', testResult.length);
         } else {
@@ -159,7 +159,7 @@ export const ProductTable = ({ onEdit, onRefresh, searchTerm = "" }: ProductTabl
         performanceMonitor.endTimer('product-table-test-query');
       }
     };
-    
+
     testQuery();
   }, []);
 
@@ -171,48 +171,48 @@ export const ProductTable = ({ onEdit, onRefresh, searchTerm = "" }: ProductTabl
       try {
         console.log('Fetching products from backend API...');
         const allProducts = await getProducts();
-        
+
         if (!Array.isArray(allProducts)) {
           console.error('Invalid products data:', allProducts);
           return [];
         }
-        
+
         // Apply client-side filtering for search term
         let filteredProducts = allProducts;
         if (searchTerm.trim()) {
           const lowerSearch = searchTerm.toLowerCase();
-          filteredProducts = allProducts.filter((p: Product) => 
+          filteredProducts = allProducts.filter((p: Product) =>
             (p.name || '').toLowerCase().includes(lowerSearch) ||
             (p.sku_code || '').toLowerCase().includes(lowerSearch) ||
             (p.hsn_code || '').toLowerCase().includes(lowerSearch) ||
             (p.barcode || '').toLowerCase().includes(lowerSearch)
           );
         }
-        
+
         // Apply client-side sorting
         filteredProducts.sort((a: Product, b: Product) => {
           const aVal = (a as any)[sortField];
           const bVal = (b as any)[sortField];
-          
+
           if (aVal === undefined || aVal === null) return 1;
           if (bVal === undefined || bVal === null) return -1;
-          
+
           if (typeof aVal === 'string' && typeof bVal === 'string') {
-            return sortDirection === 'asc' 
+            return sortDirection === 'asc'
               ? aVal.localeCompare(bVal)
               : bVal.localeCompare(aVal);
           }
-          
+
           if (typeof aVal === 'number' && typeof bVal === 'number') {
             return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
           }
-          
+
           return 0;
         });
-        
+
         // Apply pagination
         const paginatedProducts = filteredProducts.slice(offset, offset + ITEMS_PER_PAGE);
-        
+
         console.log(`Fetched ${allProducts.length} products, filtered to ${filteredProducts.length}, showing page ${currentPage}`);
         return paginatedProducts;
       } catch (err) {
@@ -222,10 +222,10 @@ export const ProductTable = ({ onEdit, onRefresh, searchTerm = "" }: ProductTabl
         performanceMonitor.endTimer('product-table-main-query');
       }
     },
-      staleTime: 30000, // 30 seconds
+    staleTime: 30000, // 30 seconds
     gcTime: 5 * 60 * 1000, // 5 minutes
   });
-  
+
   const products = productsData || [];
 
   // Get total count for pagination (client-side filtering)
@@ -235,15 +235,15 @@ export const ProductTable = ({ onEdit, onRefresh, searchTerm = "" }: ProductTabl
       performanceMonitor.startTimer('product-table-count-query');
       try {
         const allProducts = await getProducts();
-        
+
         if (!Array.isArray(allProducts)) {
           return 0;
         }
-        
+
         // Apply same search filter as main query
         if (searchTerm.trim()) {
           const lowerSearch = searchTerm.toLowerCase();
-          const filtered = allProducts.filter((p: Product) => 
+          const filtered = allProducts.filter((p: Product) =>
             (p.name || '').toLowerCase().includes(lowerSearch) ||
             (p.sku_code || '').toLowerCase().includes(lowerSearch) ||
             (p.hsn_code || '').toLowerCase().includes(lowerSearch) ||
@@ -251,7 +251,7 @@ export const ProductTable = ({ onEdit, onRefresh, searchTerm = "" }: ProductTabl
           );
           return filtered.length;
         }
-        
+
         return allProducts.length;
       } catch (err) {
         console.error('Count query error:', err);
@@ -260,7 +260,7 @@ export const ProductTable = ({ onEdit, onRefresh, searchTerm = "" }: ProductTabl
         performanceMonitor.endTimer('product-table-count-query');
       }
     },
-      staleTime: 60000, // 1 minute
+    staleTime: 60000, // 1 minute
     gcTime: 5 * 60 * 1000, // 5 minutes
   });
 
@@ -333,14 +333,14 @@ export const ProductTable = ({ onEdit, onRefresh, searchTerm = "" }: ProductTabl
             {error.message || 'Unable to fetch products. Please try again.'}
           </p>
           <div className="flex gap-2 mt-4 justify-center">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => refetch()}
             >
               Retry Query
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => window.location.reload()}
             >
               Reload Page
@@ -409,6 +409,7 @@ export const ProductTable = ({ onEdit, onRefresh, searchTerm = "" }: ProductTabl
               <SortableHeader field="unit_id" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
                 Unit
               </SortableHeader>
+              <TableHead>Location</TableHead>
               <SortableHeader field="cost_price" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} className="text-right">
                 Cost Price
               </SortableHeader>
@@ -450,7 +451,7 @@ export const ProductTable = ({ onEdit, onRefresh, searchTerm = "" }: ProductTabl
                               // Calculate consolidated stock across all locations
                               let totalOnHand = 0;
                               let totalAvailable = 0;
-                              
+
                               if (Array.isArray(product.stock_levels)) {
                                 product.stock_levels.forEach(level => {
                                   totalOnHand += level.quantity_on_hand || 0;
@@ -460,7 +461,7 @@ export const ProductTable = ({ onEdit, onRefresh, searchTerm = "" }: ProductTabl
                                 totalOnHand = product.stock_levels.quantity_on_hand || 0;
                                 totalAvailable = product.stock_levels.quantity_available || 0;
                               }
-                              
+
                               return (
                                 <span className={`font-medium ${totalOnHand > 0 && totalOnHand !== totalAvailable ? 'text-orange-600' : ''}`}>
                                   {totalOnHand}
@@ -478,7 +479,7 @@ export const ProductTable = ({ onEdit, onRefresh, searchTerm = "" }: ProductTabl
                               // Calculate consolidated stock across all locations
                               let totalOnHand = 0;
                               let totalAvailable = 0;
-                              
+
                               if (Array.isArray(product.stock_levels)) {
                                 product.stock_levels.forEach(level => {
                                   totalOnHand += level.quantity_on_hand || 0;
@@ -488,7 +489,7 @@ export const ProductTable = ({ onEdit, onRefresh, searchTerm = "" }: ProductTabl
                                 totalOnHand = product.stock_levels.quantity_on_hand || 0;
                                 totalAvailable = product.stock_levels.quantity_available || 0;
                               }
-                              
+
                               return (
                                 <>
                                   <div className="font-medium">Stock Details</div>
@@ -509,6 +510,23 @@ export const ProductTable = ({ onEdit, onRefresh, searchTerm = "" }: ProductTabl
                   </TableCell>
                   <TableCell>
                     {product.units ? `${product.units.name} (${product.units.abbreviation})` : (product.unit_id || '-')}
+                  </TableCell>
+                  <TableCell>
+                    {(() => {
+                      // Get location info from warehouse_rack or stock_levels
+                      if (product.warehouse_rack) {
+                        return <span className="text-sm">{product.warehouse_rack}</span>;
+                      }
+                      if (Array.isArray(product.stock_levels) && product.stock_levels.length > 0) {
+                        const locations = product.stock_levels
+                          .map(sl => sl.location_name)
+                          .filter(Boolean);
+                        if (locations.length > 0) {
+                          return <span className="text-sm">{locations.join(', ')}</span>;
+                        }
+                      }
+                      return <span className="text-muted-foreground">-</span>;
+                    })()}
                   </TableCell>
                   <TableCell className="text-right">
                     {formatCurrency(product.cost_price || 0, currency)}
@@ -595,7 +613,7 @@ export const ProductTable = ({ onEdit, onRefresh, searchTerm = "" }: ProductTabl
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-4 text-muted-foreground">
+                <TableCell colSpan={10} className="text-center py-4 text-muted-foreground">
                   No products found. Add a new product to get started.
                 </TableCell>
               </TableRow>
@@ -635,7 +653,7 @@ export const ProductTable = ({ onEdit, onRefresh, searchTerm = "" }: ProductTabl
           </div>
         </div>
       )}
-      
+
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
