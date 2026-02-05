@@ -216,6 +216,8 @@ app.add_middleware(
         "http://127.0.0.1:4173",  # Vite preview port
         "https://versal.tolor.com",  # Production domain
         "http://versal.tolor.com",   # Production domain (http)
+        "https://versaldb.tolor.com", # Database domain
+        "http://versaldb.tolor.com",  # Database domain (http)
     ],
     allow_credentials=True,
     allow_methods=["*"],
