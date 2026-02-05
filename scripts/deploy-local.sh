@@ -710,15 +710,14 @@ if [[ "${CORE_ONLY}" == "true" ]]; then
   cp "${OFFICIAL_COMPOSE_FILE}" "${PATCHED_COMPOSE_FILE}"
   
   echo "Patching docker-compose dependencies..."
-  # Remove 'analytics:' and the following line (condition) from depends_on blocks
-  # Logic: Find lines with 6 spaces followed by 'analytics:', read next line, delete both
-  if [[ "$OSTYPE" == "darwin"* ]]; then
-    # macOS sed
-    sed -i '' '/^[[:space:]]\{6\}analytics:[[:space:]]*$/{N;d;}' "${PATCHED_COMPOSE_FILE}"
-  else
-    # Linux sed
-    sed -i '/^[[:space:]]\{6\}analytics:[[:space:]]*$/{N;d;}' "${PATCHED_COMPOSE_FILE}"
-  fi
+  # Use perl for multi-line replacement (more robust than sed)
+  # 1. Remove entire depends_on block if it only contains analytics (e.g. kong, studio, functions)
+  #    Match: newline + spaces + depends_on: + newline + spaces + analytics: + newline + spaces + condition: ...
+  perl -i -0777 -pe 's/(\n\s+depends_on:\n\s+analytics:\n\s+condition: service_healthy[^\n]*\n)/\n/g' "${PATCHED_COMPOSE_FILE}"
+  
+  # 2. Remove analytics entry from mixed dependency lists (e.g. auth, rest)
+  #    Match: newline + spaces + analytics: + newline + spaces + condition: ...
+  perl -i -0777 -pe 's/(\n\s+analytics:\n\s+condition: service_healthy[^\n]*\n)/\n/g' "${PATCHED_COMPOSE_FILE}"
   
   # Update global COMPOSE_FILES to use the patched version
   COMPOSE_FILES="-f ${PATCHED_COMPOSE_FILE}"
