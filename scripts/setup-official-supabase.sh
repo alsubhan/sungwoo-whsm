@@ -22,7 +22,8 @@ echo ""
 # Step 1: Clone or update Supabase repo
 if [[ -d "${SUPABASE_REPO_DIR}" ]]; then
   echo "Updating Supabase repository..."
-  (cd "${SUPABASE_REPO_DIR}" && git pull --depth 1 || true)
+  echo "Updating Supabase repository..."
+  (cd "${SUPABASE_REPO_DIR}" && git fetch --depth 1 && git reset --hard origin/master || true)
 else
   echo "Cloning Supabase repository (shallow clone)..."
   git clone --depth 1 "${SUPABASE_REPO_URL}" "${SUPABASE_REPO_DIR}"
