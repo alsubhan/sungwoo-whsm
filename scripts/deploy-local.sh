@@ -573,6 +573,21 @@ fi
 if [[ -n "${SUPABASE_PUBLIC_PORT:-}" ]]; then
   update_env_key "KONG_HTTP_PORT" "${SUPABASE_PUBLIC_PORT}" "${SUPABASE_ENV_FILE}"
 fi
+
+# Sync critical Supabase URLs
+if [[ -n "${SUPABASE_PUBLIC_URL:-}" ]]; then
+  # API_EXTERNAL_URL is used by Gotrue (auth)
+  update_env_key "API_EXTERNAL_URL" "${SUPABASE_PUBLIC_URL}" "${SUPABASE_ENV_FILE}"
+  
+  # SITE_URL is used by Gotrue (auth) as default generic redirect
+  update_env_key "SITE_URL" "${SUPABASE_PUBLIC_URL}" "${SUPABASE_ENV_FILE}"
+  
+  # SUPABASE_PUBLIC_URL is used by Studio
+  update_env_key "SUPABASE_PUBLIC_URL" "${SUPABASE_PUBLIC_URL}" "${SUPABASE_ENV_FILE}"
+  
+  # ADDITIONAL_REDIRECT_URLS - add the public URL
+  update_env_key "ADDITIONAL_REDIRECT_URLS" "${SUPABASE_PUBLIC_URL}/*" "${SUPABASE_ENV_FILE}"
+fi
 echo "✓ Keys synced to ${SUPABASE_ENV_FILE}"
 
 # Reload .env to get updated values
