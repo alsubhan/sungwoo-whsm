@@ -7,6 +7,7 @@ set -euo pipefail
 # Resolve repo root regardless of where this script is run from
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+export PROJECT_ROOT="${REPO_ROOT}"
 
 # Change to repo root
 cd "${REPO_ROOT}"
@@ -698,10 +699,10 @@ SERVICES_OPTS="${SERVICES_OPTS:-${SERVICES:-}}"
 # Required dependencies: analytics (required by studio, kong, auth, rest, meta), vector (required by db)
 # Optional services: realtime, storage, imgproxy, functions, supavisor
 if [[ "${CORE_ONLY}" == "true" ]]; then
-  SUPABASE_GROUP="db auth rest kong studio meta analytics vector"
+  SUPABASE_GROUP="db auth rest kong studio meta vector"
   echo ""
   echo "Core mode: Deploying core services (db, kong, auth, rest, studio, meta)"
-  echo "Including dependencies: analytics, vector"
+  echo "Including dependencies: vector"
   echo "Skipping: realtime, storage, imgproxy, functions, supavisor"
 else
   SUPABASE_GROUP="db auth rest realtime meta storage kong studio functions vector analytics supavisor imgproxy"
