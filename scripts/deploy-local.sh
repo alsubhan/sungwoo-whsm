@@ -704,6 +704,28 @@ if [[ "${CORE_ONLY}" == "true" ]]; then
   echo "Core mode: Deploying core services (db, kong, auth, rest, studio, meta)"
   echo "Including dependencies: vector"
   echo "Skipping: realtime, storage, imgproxy, functions, supavisor"
+  
+  # Create patched compose file to remove analytics dependencies
+  PATCHED_COMPOSE_FILE="${OFFICIAL_COMPOSE_FILE}.core"
+  cp "${OFFICIAL_COMPOSE_FILE}" "${PATCHED_COMPOSE_FILE}"
+  
+  echo "Patching docker-compose dependencies..."
+  # Remove 'analytics:' and the following line (condition) from depends_on blocks
+  # Logic: Find lines with 6 spaces followed by 'analytics:', read next line, delete both
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS sed
+    sed -i '' '/^[[:space:]]\{6\}analytics:[[:space:]]*$/{N;d;}' "${PATCHED_COMPOSE_FILE}"
+  else
+    # Linux sed
+    sed -i '/^[[:space:]]\{6\}analytics:[[:space:]]*$/{N;d;}' "${PATCHED_COMPOSE_FILE}"
+  fi
+  
+  # Update global COMPOSE_FILES to use the patched version
+  COMPOSE_FILES="-f ${PATCHED_COMPOSE_FILE}"
+  if [[ -f "${CUSTOM_COMPOSE_FILE}" ]]; then
+    COMPOSE_FILES="${COMPOSE_FILES} -f ${CUSTOM_COMPOSE_FILE}"
+  fi
+  echo "✓ Using patched compose file (dependencies removed)"
 else
   SUPABASE_GROUP="db auth rest realtime meta storage kong studio functions vector analytics supavisor imgproxy"
 fi
