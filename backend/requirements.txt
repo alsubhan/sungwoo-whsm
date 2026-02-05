@@ -1,0 +1,17 @@
+
+pyjwt
+python-jose[cryptography]
+python-multipart
+uvicorn
+gunicorn
+fastapi
+pydantic
+supabase
+gotrue
+postgrest
+realtime
+storage3
+uvloop
+httptools
+python-dotenv
+requests

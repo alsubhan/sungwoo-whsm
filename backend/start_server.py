@@ -1,0 +1,70 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+Startup script for Versal API with DEBUG mode support
+
+This script handles the --debug flag and sets the appropriate environment variable
+before starting the uvicorn server.
+"""
+
+import os
+import sys
+import subprocess
+from pathlib import Path
+
+def main():
+    # Try to find the venv's Python if we're in a venv
+    venv_python = None
+    script_dir = Path(__file__).parent
+    venv_python_path = script_dir / "venv" / "bin" / "python3"
+    
+    if venv_python_path.exists():
+        venv_python = str(venv_python_path)
+        print(f"✅ Using venv Python: {venv_python}")
+    else:
+        # Fall back to current interpreter
+        venv_python = sys.executable
+        print(f"⚠️  Using system Python: {venv_python}")
+    # Check if --debug flag is provided
+    debug_mode = "--debug" in sys.argv
+    
+    # Remove --debug from sys.argv to avoid uvicorn errors
+    args = [arg for arg in sys.argv if arg != "--debug"]
+    
+    if debug_mode:
+        print("🔧 DEBUG MODE ENABLED via command line flag")
+        # Set environment variable for debug mode
+        os.environ["DEBUG"] = "true"
+    else:
+        print("🚀 PRODUCTION MODE - Debug features are disabled")
+        # Ensure DEBUG is not set or is false
+        if "DEBUG" in os.environ:
+            del os.environ["DEBUG"]
+    
+    # Build uvicorn command - use python -m uvicorn to ensure we use the venv's uvicorn
+    uvicorn_cmd = [
+        venv_python,  # Use the venv's Python interpreter
+        "-m", "uvicorn",
+        "main:app", 
+        "--reload", 
+        "--port", "7001"
+    ]
+    
+    # Add any additional arguments that were passed
+    if len(args) > 1:  # Skip the script name
+        uvicorn_cmd.extend(args[1:])
+    
+    print(f"Starting server with command: {' '.join(uvicorn_cmd)}")
+    
+    # Start the server
+    try:
+        subprocess.run(uvicorn_cmd, check=True)
+    except KeyboardInterrupt:
+        print("\n🛑 Server stopped by user")
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Error starting server: {e}")
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main() 

@@ -1,0 +1,119 @@
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Plus, Search } from "lucide-react";
+import { ProductTable } from "@/components/products/ProductTable";
+import { ProductDialog } from "@/components/products/ProductDialog";
+import { useAuth } from "@/hooks/useAuth";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { PermissionGuard } from "@/components/ui/permission-guard";
+
+// Define a more complete Product interface to match what's used in ProductTable
+export interface Product {
+  id: string;
+  sku_code: string;
+  hsn_code: string;
+  name: string;
+  description?: string;
+  categories?: { name: string };
+  units?: { name: string; abbreviation: string };
+  cost_price?: number;
+  selling_price?: number;
+  sale_price?: number;
+  mrp?: number;
+  initial_quantity?: number;
+  stock_levels?: Array<{ quantity_on_hand: number; quantity_available: number }> | { quantity_on_hand: number; quantity_available: number };
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+const ProductsPage = () => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
+  const { hasPermission } = useAuth();
+  const canCreateProducts = hasPermission('products_create');
+  
+  const handleAddProduct = () => {
+    setEditingProduct(null);
+    setIsDialogOpen(true);
+  };
+  
+  const handleEditProduct = (product: Product) => {
+    setEditingProduct(product);
+    setIsDialogOpen(true);
+  };
+  
+  const handleRefresh = () => {
+    setRefreshKey(prev => prev + 1);
+  };
+  
+  return (
+    <PermissionGuard 
+      requiredPermission="products_view"
+      fallbackMessage="You do not have permission to view products. Please contact an administrator."
+    >
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold tracking-tight">Products</h1>
+          {canCreateProducts ? (
+            <Button 
+              onClick={handleAddProduct}
+              className="flex items-center gap-1"
+            >
+              <Plus className="h-4 w-4" /> Add Product
+            </Button>
+          ) : (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <Button 
+                      disabled
+                      className="flex items-center gap-1"
+                    >
+                      <Plus className="h-4 w-4" /> Add Product
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  You do not have permission to create products
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <Search className="h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Search products..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="max-w-sm"
+          />
+        </div>
+        
+        {/* Pass onEdit prop properly to ProductTable component */}
+        <ProductTable 
+          key={refreshKey}
+          onEdit={handleEditProduct} 
+          onRefresh={handleRefresh}
+          searchTerm={searchTerm}
+        />
+        
+        <ProductDialog 
+          open={isDialogOpen} 
+          onOpenChange={setIsDialogOpen}
+          product={editingProduct}
+          onSuccess={handleRefresh}
+        />
+      </div>
+    </PermissionGuard>
+  );
+};
+
+export default ProductsPage;
