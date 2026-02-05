@@ -566,6 +566,7 @@ fi
 if ! grep -q "^POSTGRES_HOST=" "${SUPABASE_ENV_FILE}" 2>/dev/null; then
   update_env_key "POSTGRES_HOST" "db" "${SUPABASE_ENV_FILE}"
 fi
+if ! grep -q "^POSTGRES_PORT=" "${SUPABASE_ENV_FILE}" 2>/dev/null; then
   update_env_key "POSTGRES_PORT" "5432" "${SUPABASE_ENV_FILE}"
 fi
 # Sync KONG_HTTP_PORT from SUPABASE_PUBLIC_PORT
