@@ -594,6 +594,18 @@ if [[ -n "${SUPABASE_PUBLIC_URL:-}" ]]; then
   # ADDITIONAL_REDIRECT_URLS - add the public URL
   update_env_key "ADDITIONAL_REDIRECT_URLS" "${SUPABASE_PUBLIC_URL}/*" "${SUPABASE_ENV_FILE}"
 fi
+
+# Sync Auth Configuration
+if [[ -n "${SUPABASE_MAILER_AUTOCONFIRM:-}" ]]; then
+  update_env_key "SUPABASE_MAILER_AUTOCONFIRM" "${SUPABASE_MAILER_AUTOCONFIRM}" "${SUPABASE_ENV_FILE}"
+  # Also set GOTRUE/MAILER specific vars if needed by standard supabase setup
+  update_env_key "GOTRUE_MAILER_AUTOCONFIRM" "${SUPABASE_MAILER_AUTOCONFIRM}" "${SUPABASE_ENV_FILE}"
+fi
+if [[ -n "${SUPABASE_DISABLE_SIGNUP:-}" ]]; then
+  update_env_key "SUPABASE_DISABLE_SIGNUP" "${SUPABASE_DISABLE_SIGNUP}" "${SUPABASE_ENV_FILE}"
+  update_env_key "GOTRUE_DISABLE_SIGNUP" "${SUPABASE_DISABLE_SIGNUP}" "${SUPABASE_ENV_FILE}"
+fi
+
 echo "✓ Keys synced to ${SUPABASE_ENV_FILE}"
 
 # Reload .env to get updated values
