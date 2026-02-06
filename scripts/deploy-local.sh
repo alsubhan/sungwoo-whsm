@@ -1407,6 +1407,28 @@ PYTHON
     ensure_triggers_enabled "${db_container}"
 
   fi
+
+  # Apply migrations (ensure triggers like handle_new_user are present)
+  # This runs every time to ensure updates are applied (migrations must be idempotent)
+  if [[ -n "${db_container}" ]]; then
+    MIGRATIONS_DIR="${REPO_ROOT}/supabase/migrations"
+    if [[ -d "${MIGRATIONS_DIR}" ]]; then
+      echo ""
+      echo "Checking for migrations in supabase/migrations..."
+      for sql_file in "${MIGRATIONS_DIR}"/*.sql; do
+        # Check if glob matched any files
+        if [[ -f "${sql_file}" ]]; then
+           echo "  Applying $(basename "${sql_file}")..."
+           # Run migration
+           MIG_OUTPUT=$(docker exec -i "${db_container}" psql -U postgres -d postgres < "${sql_file}" 2>&1)
+           if [[ $? -ne 0 ]]; then
+             echo "    Warning: Migration $(basename "${sql_file}") returned non-zero exit code."
+             echo "    Output: ${MIG_OUTPUT}"
+           fi
+        fi
+      done
+    fi
+  fi
   
   echo ""
   echo "Supabase keys in .env file:"
