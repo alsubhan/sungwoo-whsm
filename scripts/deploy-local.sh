@@ -23,6 +23,7 @@ Parameters:
     --blank-db        Initialize database as blank (no schema or data, only auth prerequisites)
     --project-name    Docker Compose project name (default: supabase). Use different names to run multiple instances.
     --core            Deploy only core services (db, kong, auth, rest, studio, meta). Default: deploy all services.
+    --skip-deps       Skip dependency checks (e.g. deploy 'web' without checking/deploying Supabase)
     --force           Force reinitialize: stop containers, remove volumes, and start fresh (WARNING: deletes all data)
     --help            Show this help message
 
@@ -271,6 +272,7 @@ BLANK_DB=false
 FORCE_REINIT=false
 COMPOSE_PROJECT_NAME=""
 CORE_ONLY=false
+SKIP_DEPS=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -297,6 +299,10 @@ while [[ $# -gt 0 ]]; do
     --project-name)
       COMPOSE_PROJECT_NAME="$2"
       shift 2
+      ;;
+    --skip-deps)
+      SKIP_DEPS=true
+      shift
       ;;
     --core)
       CORE_ONLY=true
@@ -812,9 +818,9 @@ if [[ -n "${COMPOSE_SERVICES}" ]]; then
       DEPLOY_OTHER_SERVICES=true
       # Check if requested service depends on Supabase services
       # api depends on kong, web depends on api (which depends on kong)
-      if [[ "${svc}" == "api" ]] || [[ "${svc}" == "web" ]]; then
+      if [[ "${SKIP_DEPS}" == "false" ]] && ([[ "${svc}" == "api" ]] || [[ "${svc}" == "web" ]]); then
         NEEDS_SUPABASE=true
-        echo "Note: ${svc} service depends on Supabase services - Supabase will be deployed first"
+        echo "Note: ${svc} service depends on Supabase services - Supabase will be deployed first (use --skip-deps to bypass)"
       fi
       break
     fi
